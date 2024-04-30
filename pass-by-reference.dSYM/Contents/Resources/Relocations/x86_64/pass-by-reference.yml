@@ -1,0 +1,8 @@
+---
+triple:          'x86_64-apple-darwin'
+binary-path:     '/Users/ronan/Library/CloudStorage/OneDrive-DeakinUniversity/UNI/SIT102/Pass Tasks/P6 - COMPLETED/HelloWorldCPP/pass-by-reference'
+relocations:
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: __Z4swapRiS_, symObjAddr: 0x0, symBinAddr: 0x100000ED0, symSize: 0x30 }
+  - { offsetInCU: 0x7E4, offset: 0x7E4, size: 0x8, addend: 0x0, symName: __Z4swapRiS_, symObjAddr: 0x0, symBinAddr: 0x100000ED0, symSize: 0x30 }
+  - { offsetInCU: 0x828, offset: 0x828, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x30, symBinAddr: 0x100000F00, symSize: 0x5A }
+...

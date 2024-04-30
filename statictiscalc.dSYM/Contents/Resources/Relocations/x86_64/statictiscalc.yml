@@ -1,0 +1,12 @@
+---
+triple:          'x86_64-apple-darwin'
+binary-path:     '/Users/ronan/Library/CloudStorage/OneDrive-DeakinUniversity/UNI/SIT102/Pass Tasks/P6 - COMPLETED/HelloWorldCPP/statictiscalc'
+relocations:
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: __Z11read_doublev, symObjAddr: 0x0, symBinAddr: 0x100000B60, symSize: 0x80 }
+  - { offsetInCU: 0x5520, offset: 0x5520, size: 0x8, addend: 0x0, symName: __Z11read_doublev, symObjAddr: 0x0, symBinAddr: 0x100000B60, symSize: 0x80 }
+  - { offsetInCU: 0x554C, offset: 0x554C, size: 0x8, addend: 0x0, symName: __Z14populate_arrayP10NumberData, symObjAddr: 0x80, symBinAddr: 0x100000BE0, symSize: 0xF0 }
+  - { offsetInCU: 0x5590, offset: 0x5590, size: 0x8, addend: 0x0, symName: __Z13calculate_sumPK10NumberData, symObjAddr: 0x170, symBinAddr: 0x100000CD0, symSize: 0x60 }
+  - { offsetInCU: 0x55E6, offset: 0x55E6, size: 0x8, addend: 0x0, symName: __Z14calculate_meanPK10NumberData, symObjAddr: 0x1D0, symBinAddr: 0x100000D30, symSize: 0x40 }
+  - { offsetInCU: 0x5620, offset: 0x5620, size: 0x8, addend: 0x0, symName: __Z12find_maximumPK10NumberData, symObjAddr: 0x210, symBinAddr: 0x100000D70, symSize: 0x80 }
+  - { offsetInCU: 0x5676, offset: 0x5676, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x290, symBinAddr: 0x100000DF0, symSize: 0x85 }
+...

@@ -1,0 +1,7 @@
+---
+triple:          'x86_64-apple-darwin'
+binary-path:     '/Users/ronan/Library/CloudStorage/OneDrive-DeakinUniversity/UNI/SIT102/Pass Tasks/P6 - COMPLETED/HelloWorldCPP/array0'
+relocations:
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000E60, symSize: 0xB7 }
+  - { offsetInCU: 0x5520, offset: 0x5520, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000E60, symSize: 0xB7 }
+...
