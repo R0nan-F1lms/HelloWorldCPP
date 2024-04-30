@@ -9,12 +9,16 @@ const int SCREEN_HEIGHT = 600;
 const int PLAYER_SIZE = 50;
 const int NPC_SIZE = 30;
 
-const double PLAYER_SPEED = 0.7; // Adjust player speed
-const double NPC_SPEED = 0.05;    // Adjust NPC speed
+const double PLAYER_SPEED = 3; // Adjust player speed
+const double NPC_SPEED = 0.5;    // Adjust NPC speed
 
 const int MAX_NPCS = 20; // Maximum number of NPCs
-const int SPAWN_THRESHOLD = MAX_NPCS * 3; // Threshold to spawn more NPCs
+const int NUM_NPC = 5;
+const int WINNING_NUMBER = NUM_NPC * 3; // Threshold to spawn more NPCs
+const int FPS = 60;
 
+
+int lifetime = 1000;
 // Player
 struct Player {
     point_2d position;
@@ -32,7 +36,7 @@ struct NPC {
     bool is_player_close;
     color normal_colour;
     color close_colour;
-//    color collided_colour; // New color for when NPC collides with another NPC
+    int lifetime;
     Target target;
     bool collided; // Flag to indicate if this NPC has collided in the current tick
 };
@@ -62,6 +66,7 @@ void tick(Game &game);
 void handle_player_input(Player &player);
 bool check_collision(const NPC &npc, const NPC *npcs, int num_npcs);
 void spawn_npc(Game &game);
+void time_to_live(Game &game);
 
 
 int main() {
@@ -75,7 +80,7 @@ int main() {
     // Initialize game
     Game game;
     game.player = player;
-    game.num_npcs = 5; // Random number of NPCs between 0 and MAX_NPCS
+    game.num_npcs = NUM_NPC;
     game.state = Running;
 
     // Initialize NPCs
@@ -86,14 +91,17 @@ int main() {
         game.npcs[i].close_colour = COLOR_YELLOW;
         game.npcs[i].target.position = random_position();
         game.npcs[i].collided = false;
+        game.npcs[i].lifetime = lifetime;
     }
-
+// game loop
     do {
         process_events();
         handle_player_input(game.player);
-        tick(game);
-    } while(!window_close_requested("RPG Game"));
+        tick(game); 
+        time_to_live(game);
+    } while(game.state == Running);
 
+    close_window("RPG Game");
     return 0;
 }
 
@@ -178,8 +186,8 @@ for (int i = 0; i < game.num_npcs; ++i) {
     // Render the game
     clear_screen(COLOR_WHITE);
 
-// Display current number of NPCs
-//draw_text("Number of NPCs: " + std::to_string(game.num_npcs), COLOR_BLACK, 10, 10);
+    // Display current number of NPCs
+    //draw_text("Number of NPCs: " + std::to_string(game.num_npcs), COLOR_BLACK, 10, 10);
 
     // render player
     fill_rectangle(game.player.colour, game.player.position.x, game.player.position.y, PLAYER_SIZE, PLAYER_SIZE);
@@ -188,12 +196,41 @@ for (int i = 0; i < game.num_npcs; ++i) {
     for (int i = 0; i < game.num_npcs; ++i) {
         if (game.npcs[i].is_player_close) {
             fill_triangle(game.npcs[i].close_colour, game.npcs[i].position.x, game.npcs[i].position.y, game.npcs[i].position.x + NPC_SIZE, game.npcs[i].position.y, game.npcs[i].position.x + (NPC_SIZE / 2), game.npcs[i].position.y - NPC_SIZE);
+            game.npcs[i].lifetime = lifetime;
         } else {
             fill_triangle(game.npcs[i].normal_colour, game.npcs[i].position.x, game.npcs[i].position.y, game.npcs[i].position.x + NPC_SIZE, game.npcs[i].position.y, game.npcs[i].position.x + (NPC_SIZE / 2), game.npcs[i].position.y - NPC_SIZE);
         }
     }
 
-    refresh_screen();
+    if (game.num_npcs <= 0) {
+        game.state = Lost;
+        write_line("Whoops The npc's died you lose");
+    } else if (game.num_npcs >= WINNING_NUMBER) {
+        game.state = Won;
+        write_line("Congrats you maxed out the NPC's you win!");
+    }
+
+    refresh_screen(FPS);
+}
+
+void time_to_live(Game &game){
+    // Update NPCs' lifetime and handle collisions with player
+    for (int i = 0; i < game.num_npcs; ++i) {
+        if (!game.npcs[i].collided) {
+            game.npcs[i].lifetime--; // Decrease NPC's lifetime if it hasn't collided with the player
+            // Check if NPC's lifetime has reached 0
+            //write_line(game.npcs[i].lifetime);
+            if (game.npcs[i].lifetime <= 0) {
+                // Remove NPC if lifetime is 0
+                write_line("NPC removed");
+                for (int j = i; j < game.num_npcs - 1; ++j) {
+                    game.npcs[j] = game.npcs[j + 1];
+                }
+                game.num_npcs--;
+                i--; // Update loop index to recheck current index after removing NPC
+            }
+        }
+    }
 }
 
 // Procedure to handle player input
@@ -224,6 +261,7 @@ void spawn_npc(Game &game) {
         game.npcs[game.num_npcs].close_colour = COLOR_YELLOW;
         game.npcs[game.num_npcs].target.position = random_position();
         game.npcs[game.num_npcs].collided = false;
+        game.npcs[game.num_npcs].lifetime = lifetime;
         game.num_npcs++;
     }
 }
