@@ -1,4 +1,5 @@
 #include <splashkit.h>
+#include <string>
 
 // Constants for screen dimensions
 const int SCREEN_WIDTH = 800;
@@ -12,6 +13,7 @@ const double PLAYER_SPEED = 0.7; // Adjust player speed
 const double NPC_SPEED = 0.05;    // Adjust NPC speed
 
 const int MAX_NPCS = 20; // Maximum number of NPCs
+const int SPAWN_THRESHOLD = MAX_NPCS * 3; // Threshold to spawn more NPCs
 
 // Player
 struct Player {
@@ -30,8 +32,11 @@ struct NPC {
     bool is_player_close;
     color normal_colour;
     color close_colour;
+//    color collided_colour; // New color for when NPC collides with another NPC
     Target target;
+    bool collided; // Flag to indicate if this NPC has collided in the current tick
 };
+
 
 // Enum for Game state
 enum GameState {
@@ -55,6 +60,8 @@ void set_new_random_target(NPC &npc);
 void move_npc(NPC &npc);
 void tick(Game &game);
 void handle_player_input(Player &player);
+bool check_collision(const NPC &npc, const NPC *npcs, int num_npcs);
+void spawn_npc(Game &game);
 
 
 int main() {
@@ -68,7 +75,7 @@ int main() {
     // Initialize game
     Game game;
     game.player = player;
-    game.num_npcs = rnd(MAX_NPCS); // Random number of NPCs between 0 and MAX_NPCS
+    game.num_npcs = 5; // Random number of NPCs between 0 and MAX_NPCS
     game.state = Running;
 
     // Initialize NPCs
@@ -78,6 +85,7 @@ int main() {
         game.npcs[i].normal_colour = COLOR_RED;
         game.npcs[i].close_colour = COLOR_YELLOW;
         game.npcs[i].target.position = random_position();
+        game.npcs[i].collided = false;
     }
 
     do {
@@ -124,12 +132,42 @@ void move_npc(NPC &npc) {
     }
 }
 
+// Function to check collision between NPCs
+bool check_collision(const NPC &npc, const NPC *npcs, int num_npcs) {
+    for (int i = 0; i < num_npcs; ++i) {
+        if (&npc != &npcs[i]) { // Exclude checking collision with itself
+            double dx = npc.position.x - npcs[i].position.x;
+            double dy = npc.position.y - npcs[i].position.y;
+            double distance = sqrt(dx * dx + dy * dy);
+            if (distance < NPC_SIZE) {
+                return true; // Collision detected
+            }
+        }
+    }
+    return false; // No collision detected
+}
+
 // Procedure to update the game state
 void tick(Game &game) {
     // Move NPCs
     for (int i = 0; i < game.num_npcs; ++i) {
         move_npc(game.npcs[i]);
     }
+
+// Check collision between NPCs and change color to blue if needed
+for (int i = 0; i < game.num_npcs; ++i) {
+    if (check_collision(game.npcs[i], game.npcs, game.num_npcs)) {
+        if (!game.npcs[i].collided) {
+            game.npcs[i].normal_colour = COLOR_BLUE; // Change color to blue if collided
+            game.npcs[i].collided = true;
+            spawn_npc(game); // Spawn NPC if it hasn't already spawned after collision
+        }
+        break;
+    } else {
+        game.npcs[i].normal_colour = COLOR_RED; // Reset color to normal if not collided
+        game.npcs[i].collided = false;
+    }
+}
 
     // Update NPCs' close status based on player's position
     for (int i = 0; i < game.num_npcs; ++i) {
@@ -139,6 +177,11 @@ void tick(Game &game) {
 
     // Render the game
     clear_screen(COLOR_WHITE);
+
+// Display current number of NPCs
+//draw_text("Number of NPCs: " + std::to_string(game.num_npcs), COLOR_BLACK, 10, 10);
+
+    // render player
     fill_rectangle(game.player.colour, game.player.position.x, game.player.position.y, PLAYER_SIZE, PLAYER_SIZE);
 
     // Draw NPCs with appropriate colour
@@ -169,5 +212,18 @@ void handle_player_input(Player &player) {
     }
     else if (key_down(ESCAPE_KEY)) {
         close_window("RPG Game"); 
+    }
+}
+
+// Procedure to spawn a new NPC
+void spawn_npc(Game &game) {
+    if (game.num_npcs < MAX_NPCS) {
+        game.npcs[game.num_npcs].position = random_position();
+        game.npcs[game.num_npcs].is_player_close = false;
+        game.npcs[game.num_npcs].normal_colour = COLOR_RED;
+        game.npcs[game.num_npcs].close_colour = COLOR_YELLOW;
+        game.npcs[game.num_npcs].target.position = random_position();
+        game.npcs[game.num_npcs].collided = false;
+        game.num_npcs++;
     }
 }
