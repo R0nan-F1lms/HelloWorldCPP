@@ -11,6 +11,8 @@ const int NPC_SIZE = 30;
 const double PLAYER_SPEED = 0.7; // Adjust player speed
 const double NPC_SPEED = 0.05;    // Adjust NPC speed
 
+const int MAX_NPCS = 20; // Maximum number of NPCs
+
 // Player
 struct Player {
     point_2d position;
@@ -41,18 +43,18 @@ enum GameState {
 // Game
 struct Game {
     Player player;
-    NPC npc;
+    NPC npcs[MAX_NPCS]; // Array to hold NPCs
+    int num_npcs; // Number of NPCs currently active
     GameState state;
 };
 
-// farward declaring
+// Forward declaring
 point_2d random_position();
-point_2d make_point (double x, double y);
+point_2d make_point(double x, double y);
 void set_new_random_target(NPC &npc);
 void move_npc(NPC &npc);
 void tick(Game &game);
 void handle_player_input(Player &player);
-
 
 
 int main() {
@@ -63,19 +65,20 @@ int main() {
     player.position = make_point(SCREEN_WIDTH / 2 - PLAYER_SIZE / 2, SCREEN_HEIGHT / 2 - PLAYER_SIZE / 2);
     player.colour = COLOR_GREEN;
 
-    // Initialize NPC
-    NPC npc;
-    npc.position = make_point(100, 100);
-    npc.is_player_close = false;
-    npc.normal_colour = COLOR_RED;
-    npc.close_colour = COLOR_YELLOW;
-    npc.target.position = random_position();
-
     // Initialize game
     Game game;
     game.player = player;
-    game.npc = npc;
+    game.num_npcs = rnd(MAX_NPCS); // Random number of NPCs between 0 and MAX_NPCS
     game.state = Running;
+
+    // Initialize NPCs
+    for (int i = 0; i < game.num_npcs; ++i) {
+        game.npcs[i].position = random_position();
+        game.npcs[i].is_player_close = false;
+        game.npcs[i].normal_colour = COLOR_RED;
+        game.npcs[i].close_colour = COLOR_YELLOW;
+        game.npcs[i].target.position = random_position();
+    }
 
     do {
         process_events();
@@ -93,6 +96,7 @@ point_2d make_point(double x, double y) {
     result.y = y;
     return result;
 }
+
 // Function to generate a random position within the screen bounds
 point_2d random_position() {
     double x = rnd(SCREEN_WIDTH);
@@ -122,21 +126,28 @@ void move_npc(NPC &npc) {
 
 // Procedure to update the game state
 void tick(Game &game) {
-    move_npc(game.npc);
+    // Move NPCs
+    for (int i = 0; i < game.num_npcs; ++i) {
+        move_npc(game.npcs[i]);
+    }
 
-    // Update NPC's close status based on player's position
-    double distance = point_point_distance(game.player.position, game.npc.position);
-    game.npc.is_player_close = (distance <= 100); // Assuming the close proximity is within 100 pixels
+    // Update NPCs' close status based on player's position
+    for (int i = 0; i < game.num_npcs; ++i) {
+        double distance = point_point_distance(game.player.position, game.npcs[i].position);
+        game.npcs[i].is_player_close = (distance <= 100); // Assuming the close proximity is within 100 pixels
+    }
 
     // Render the game
     clear_screen(COLOR_WHITE);
     fill_rectangle(game.player.colour, game.player.position.x, game.player.position.y, PLAYER_SIZE, PLAYER_SIZE);
 
-    // Draw NPC with appropriate colour
-    if (game.npc.is_player_close) {
-        fill_triangle(game.npc.close_colour, game.npc.position.x, game.npc.position.y, game.npc.position.x + NPC_SIZE, game.npc.position.y, game.npc.position.x + (NPC_SIZE / 2), game.npc.position.y - NPC_SIZE);
-    } else {
-        fill_triangle(game.npc.normal_colour, game.npc.position.x, game.npc.position.y, game.npc.position.x + NPC_SIZE, game.npc.position.y, game.npc.position.x + (NPC_SIZE / 2), game.npc.position.y - NPC_SIZE);
+    // Draw NPCs with appropriate colour
+    for (int i = 0; i < game.num_npcs; ++i) {
+        if (game.npcs[i].is_player_close) {
+            fill_triangle(game.npcs[i].close_colour, game.npcs[i].position.x, game.npcs[i].position.y, game.npcs[i].position.x + NPC_SIZE, game.npcs[i].position.y, game.npcs[i].position.x + (NPC_SIZE / 2), game.npcs[i].position.y - NPC_SIZE);
+        } else {
+            fill_triangle(game.npcs[i].normal_colour, game.npcs[i].position.x, game.npcs[i].position.y, game.npcs[i].position.x + NPC_SIZE, game.npcs[i].position.y, game.npcs[i].position.x + (NPC_SIZE / 2), game.npcs[i].position.y - NPC_SIZE);
+        }
     }
 
     refresh_screen();
